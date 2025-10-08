@@ -17,6 +17,8 @@
  * };
  */
 
+#include <climits>
+#include <cstddef>
 struct TreeNode {
     int val;
     TreeNode *left;
@@ -26,41 +28,37 @@ struct TreeNode {
 
 class Solution {
 public:
+    TreeNode* findLargestVal(TreeNode* root) {
+        while (root->right) {
+            root = root->right;
+        }
+        return root;
+    }
+
     TreeNode* deleteNode(TreeNode* root, int key) {
         if (!root) return nullptr;
         if (root->val == key) {
-            if (root->left) {
-                TreeNode* leftNode = root->left;
-                TreeNode* rightNode = root->right;
-                root = leftNode;
-                root->left = leftNode->left;
-                root->right = leftNode->right;
-                if (root->right) {
-                    root->right->right = rightNode;
-                } else {
-                    root->right = rightNode;
-                }
+            if (!root->left && !root->right) {
+                delete root;
+                return nullptr;
+            } else if (root->left && root->right) {
+                TreeNode* largest = findLargestVal(root->left);
+                root->val = largest->val;
+                root->left = deleteNode(root->left, largest->val);
                 return root;
-            } else if (root->right) {
-                TreeNode* leftNode = root->left;
-                TreeNode* rightNode = root->right;
-                root = rightNode;
-                root->left = rightNode->left;
-                root->right = rightNode->right;
-                if (root->left) {
-                    root->left->left = leftNode;
-                } else {
-                    root->left = leftNode;
-                }
+            } else if (!root->left) {
+                root = root->right;
                 return root;
             } else {
-                return nullptr;
+                root = root->left;
+                return root;
             }
         }
-        TreeNode* left = deleteNode(root->left, key);
-        root->left = left;
-        TreeNode* right = deleteNode(root->right, key);
-        root->right = right;
+        if (root->val < key) {
+            root->right = deleteNode(root->right, key);
+        } else {
+            root->left = deleteNode(root->left, key);
+        }
         return root;
     }
 };
